@@ -1,5 +1,7 @@
 class Calendar
 
+  attr_accessor :day_count, :month_count, :current_month, :months
+
   def initialize(window, x, y)
     @window = window
     @x = x
@@ -18,12 +20,13 @@ class Calendar
     @november = Gosu::Image.new(window, 'img/calendar/november.png')
     @december = Gosu::Image.new(window, 'img/calendar/december.png')
 
-    @time_counter = 0
-
     @months = [:january, :february, :march, :april,
                :may, :june, :july, :august, :september,
                :october, :november, :december]
-    @current_month = @months[0]
+
+    @day_count = 1
+    @month_count = 0
+
 
   end
 
@@ -57,11 +60,7 @@ class Calendar
   end
 
   def update
-    @time_counter += 1
-
-    if @time_counter % (60 * 5) == 0
-      @current_month = @months[1]
-    end
+    @current_month = @months[@month_count]
   end
 
 end
