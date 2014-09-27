@@ -18,34 +18,49 @@ class Calendar
     @november = Gosu::Image.new(window, 'img/calendar/november.png')
     @december = Gosu::Image.new(window, 'img/calendar/december.png')
 
+    @time_counter = 0
+
+    @months = [:january, :february, :march, :april,
+               :may, :june, :july, :august, :september,
+               :october, :november, :december]
+    @current_month = @months[0]
+
   end
 
   def draw
     case
-    when @window.month == :january
+    when @current_month == :january
       @january.draw(@x, @y, 0)
-    when @window.month == :february
+    when @current_month == :february
       @february.draw(@x, @y, 0)
-    when @window.month == :march
+    when @current_month == :march
       @march.draw(@x, @y, 0)
-    when @window.month == :april
+    when @current_month == :april
       @april.draw(@x, @y, 0)
-    when @window.month == :may
+    when @current_month == :may
       @may.draw(@x, @y, 0)
-    when @window.month == :june
+    when @current_month == :june
       @june.draw(@x, @y, 0)
-    when @window.month == :july
+    when @current_month == :july
       @july.draw(@x, @y, 0)
-    when @window.month == :august
+    when @current_month == :august
       @august.draw(@x, @y, 0)
-    when @window.month == :september
+    when @current_month == :september
       @september.draw(@x, @y, 0)
-    when @window.month == :october
+    when @current_month == :october
       @october.draw(@x, @y, 0)
-    when @window.month == :november
+    when @current_month == :november
       @november.draw(@x, @y, 0)
-    when @window.month == :december
+    when @current_month == :december
       @december.draw(@x, @y, 0)
+    end
+  end
+
+  def update
+    @time_counter += 1
+
+    if @time_counter % (60 * 5) == 0
+      @current_month = @months[1]
     end
   end
 
