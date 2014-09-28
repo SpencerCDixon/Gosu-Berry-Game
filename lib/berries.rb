@@ -21,8 +21,6 @@ class Berries
     @purple = Gosu::Image.new(window, 'img/berries/purple_berry.png')
 
     @quantity = Gosu::Font.new(@window, "Futura", 600 / 30)
-
-
     @space = 80
   end
 
@@ -67,8 +65,6 @@ class Berries
 
   end
 
-
-
   def draw_text_centered(text, font, y_adjust, c)
     x = (800 - font.text_width(text)) / 2
     y = (600 - font.height) / 2
@@ -80,6 +76,4 @@ class Berries
   def draw_text(x, y, text, font, color)
     font.draw(text, x, y, 3, 1, 1, color)
   end
-
-
 end

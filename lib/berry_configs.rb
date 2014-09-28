@@ -1,5 +1,4 @@
 module BerryConfig
-
   def orange_config
     { price: 500, window: self, x: 10, y: 400, color: "orange", genetics: ["y", "y", "y", "y"], cols: 4, type: :very_rare }
   end
@@ -50,5 +49,4 @@ module BerryConfig
   def purple_config
     { price: 300, window: self, x: 10, y: 400, color: "purple", genetics: ["x", "y", "z", "z"], cols: 3, type: :rare }
   end
-
 end
