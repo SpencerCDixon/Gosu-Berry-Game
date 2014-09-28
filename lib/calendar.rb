@@ -26,6 +26,8 @@ class Calendar
 
     @day_count = 1
     @month_count = 0
+
+
   end
 
   def draw
@@ -60,4 +62,5 @@ class Calendar
   def update
     @current_month = @months[@month_count]
   end
+
 end

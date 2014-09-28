@@ -22,33 +22,35 @@ class Main < Gosu::Window
     super(800, 600, false)
     self.caption = "Berry Game"
 
-    # Background Images
     @bg = Gosu::Image.new(self, "img/bg.gif")
+
     @farmer = Farmer.new(self, 550, 400)
     @calendar = Calendar.new(self, 30, 30)
     @cursor = Cursor.new(self, true)
     @button_reset = Buttons.new(self, 90, 480, "reset")
     @button_combine = Buttons.new(self, 340, 480, "combine")
     @button_sell = Buttons.new(self, 210, 480, "combine")
-    @berry_images = Berries.new(self, 50, 300)
-    @test_font = Gosu::Font.new(self, "Futura", 600 / 30)
-    @farmer_font = Gosu::Font.new(self, "Futura", 600 / 20)
+
 
     @basket = { yellow: 5, white: 5, black: 5, pink: 0,
                 orange: 0, blue: 0, green: 0, gray: 0,
                 red: 0, teal: 0, brown: 0, purple: 0 }
 
-    @berry_configs = [orange_config, green_config, pink_config,
-                      red_config, yellow_config, white_config,
-                      black_config, teal_config, brown_config,
-                      purple_config, gray_config, blue_config]
+    @berry_images = Berries.new(self, 50, 300)
+    @test_font = Gosu::Font.new(self, "Futura", 600 / 30)
+    @farmer_font = Gosu::Font.new(self, "Futura", 600 / 20)
 
     @locs = []
+
     @picked_berries = []
     @selected = 0
+
     @berries = []
+    @berry_configs = [orange_config, green_config, pink_config, red_config, yellow_config, white_config, black_config, teal_config, brown_config, purple_config, gray_config, blue_config]
     build_berries
+
     @score = 0
+
   end
 
   def build_berries
