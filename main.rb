@@ -18,7 +18,7 @@ class Main < Gosu::Window
   include Keys
   include BerryConfig
   attr_reader :month, :basket, :selected, :month_count, :calendar, :berry_configs, :farmer
-  attr_accessor :picked_berries
+  attr_accessor :picked_berries, :locs, :button_buy, :fertilizer, :money, :hoe
 
   def initialize
     super(800, 600, false)
@@ -33,7 +33,8 @@ class Main < Gosu::Window
     @button_combine = Buttons.new(self, 340, 480, "combine")
     @button_sell = Buttons.new(self, 220, 480, "sell")
     @button_store = Buttons.new(self, 460, 480, "store")
-    @button_game = Buttons.new(self, 500, 480, "store")
+    @button_game = Buttons.new(self, 650, 480, "store")
+    @button_buy = Buttons.new(self, 550, 480, "sell")
 
 
     @basket = { yellow: 5, white: 5, black: 5, pink: 0,
@@ -53,7 +54,9 @@ class Main < Gosu::Window
     @berry_configs = [orange_config, green_config, pink_config, red_config, yellow_config, white_config, black_config, teal_config, brown_config, purple_config, gray_config, blue_config]
     build_berries
 
-    @money = 0
+    @money = 2000
+    @fertilizer = :empty
+    @hoe = false
     @state = :running
   end
 
@@ -66,6 +69,7 @@ class Main < Gosu::Window
   def update
     if @state == :store
       back_to_game?
+      @store.update
     else
       @calendar.update
       berry_picked?
@@ -75,6 +79,8 @@ class Main < Gosu::Window
       go_to_store?
       @berries.each { |b| b.update }
     end
+
+    purchased_items?
   end
 
   def draw
@@ -83,6 +89,11 @@ class Main < Gosu::Window
     if @state == :store
       @store.draw
       @button_game.draw
+      @button_buy.draw
+      draw_text(665, 560, "Return", @test_font, Gosu::Color::RED)
+      draw_text(555, 560, "Buy Item", @test_font, Gosu::Color::RED)
+
+
     else
       @berry_images.draw
       @bg.draw(0, 0, 0)
@@ -100,8 +111,14 @@ class Main < Gosu::Window
       draw_text(85, 560, "Reset Berries", @test_font, Gosu::Color::BLACK)
       draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
       draw_text(220, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
+      draw_text(480, 560, "Store", @test_font, Gosu::Color::BLACK)
+
 
       draw_text(670, 30, "Money $#{@money}", @test_font, Gosu::Color::BLACK)
+      draw_text(555, 560, "#{@fertilizer}", @test_font, Gosu::Color::RED)
+
+      purchased_items?
+
     end
 
   end
@@ -128,7 +145,13 @@ class Main < Gosu::Window
       biggest = counts.max_by { |k, v| v }
       final_berry << biggest[0]
 
-      final_berry << berry1.genetics.uniq.sample
+      if [3, 4, 5, 6].include?(@calendar.month_count)
+        final_berry << "y"
+      elsif [7,8,9,10].include?(@calendar.month_count)
+        final_berry << "z"
+      else
+        final_berry << "x"
+      end
     end
 
     case
@@ -151,7 +174,13 @@ class Main < Gosu::Window
       biggest = counts.max_by { |k, v| v }
       final_berry << biggest[0]
 
-      final_berry << berry2.genetics.uniq.sample
+      if [3, 4, 5, 6].include?(@calendar.month_count)
+        final_berry << "y"
+      elsif [7,8,9,10].include?(@calendar.month_count)
+        final_berry << "z"
+      else
+        final_berry << "x"
+      end
     end
 
     final_berry
@@ -162,62 +191,62 @@ class Main < Gosu::Window
     array.sort!
     case
     when array == ["x", "y", "y", "y"] || array == ["y", "y", "y", "z"]
-      amount = growth_rate(current_month, yellow_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, yellow_config[:prime_month], yellow_config[:type], :yellow)
       @basket[:yellow] += amount
       @farmer.harvest = { color: :yellow, amount: amount}
 
     when array == ["x", "x", "x", "y"] || array == ["x", "x", "x", "z"]
-      amount = growth_rate(current_month, white_config[:prime_month], white_config[:type] )
+      amount = growth_rate(current_month, white_config[:prime_month], white_config[:type], :white )
       @basket[:white] += amount
       @farmer.harvest = { color: :white, amount: amount}
 
     when array == ["x", "z", "z", "z"] || array == ["y", "z", "z", "z"]
-      amount = growth_rate(current_month, black_config[:prime_month], black_config[:type] )
+      amount = growth_rate(current_month, black_config[:prime_month], black_config[:type], :black )
       @basket[:black] += amount
       @farmer.harvest = { color: :black, amount: amount}
 
     when array == ["x", "x", "y", "y"]
-      amount = growth_rate(current_month, green_config[:prime_month], green_config[:type] )
+      amount = growth_rate(current_month, green_config[:prime_month], green_config[:type], :green )
       @basket[:green] += amount
       @farmer.harvest = { color: :green, amount: amount}
 
     when array == ["y", "y", "z", "z"]
-      amount = growth_rate(current_month, red_config[:prime_month], red_config[:type] )
+      amount = growth_rate(current_month, red_config[:prime_month], red_config[:type], :red )
       @basket[:red] += amount
       @farmer.harvest = { color: :red, amount: amount}
 
     when array == ["x", "x", "z", "z"]
-      amount = growth_rate(current_month, gray_config[:prime_month], gray_config[:type] )
+      amount = growth_rate(current_month, gray_config[:prime_month], gray_config[:type], :gray )
       @basket[:gray] += amount
       @farmer.harvest = { color: :gray, amount: amount}
 
     when array == ["x", "y", "y", "z"]
-      amount = growth_rate(current_month, brown_config[:prime_month], brown_config[:type] )
+      amount = growth_rate(current_month, brown_config[:prime_month], brown_config[:type], :brown )
       @basket[:brown] += amount
       @farmer.harvest = { color: :brown, amount: amount}
 
     when array == ["x", "x", "y", "z"]
-      amount = growth_rate(current_month, teal_config[:prime_month], teal_config[:type] )
+      amount = growth_rate(current_month, teal_config[:prime_month], teal_config[:type], :teal )
       @basket[:teal] += amount
       @farmer.harvest = { color: :teal, amount: amount}
 
     when array == ["x", "y", "z", "z"]
-      amount = growth_rate(current_month, purple_config[:prime_month], purple_config[:type] )
+      amount = growth_rate(current_month, purple_config[:prime_month], purple_config[:type], :purple )
       @basket[:purple] += amount
       @farmer.harvest = { color: :purple, amount: amount}
 
     when array == ["y", "y", "y", "y"]
-      amount = growth_rate(current_month, orange_config[:prime_month], orange_config[:type] )
+      amount = growth_rate(current_month, orange_config[:prime_month], orange_config[:type], :orange )
       @basket[:orange] += amount
       @farmer.harvest = { color: :orange, amount: amount}
 
     when array == ["x", "x", "x", "x"]
-      amount = growth_rate(current_month, pink_config[:prime_month], pink_config[:type] )
+      amount = growth_rate(current_month, pink_config[:prime_month], pink_config[:type], :pink )
       @basket[:pink] += amount
       @farmer.harvest = { color: :pink, amount: amount}
 
     when array == ["z", "z", "z", "z"]
-      amount = growth_rate(current_month, blue_config[:prime_month], blue_config[:type] )
+      amount = growth_rate(current_month, blue_config[:prime_month], blue_config[:type], :blue )
       @basket[:blue] += amount
       @farmer.harvest = { color: :blue, amount: amount}
     end
@@ -279,7 +308,11 @@ class Main < Gosu::Window
         b2 = @picked_berries[1].color
         @basket[b1.to_sym] -= 1
         @basket[b2.to_sym] -= 1
+
         if @calendar.day_count == 5
+          if @fertilzer != :empty
+            @fertilizer = :empty
+          end
           @calendar.day_count = 0
           @calendar.month_count += 1
         end
@@ -291,25 +324,6 @@ class Main < Gosu::Window
         @locs.clear
       end
     end
-  end
-
-  def growth_rate(current_month, prime_month, type_of_berry)
-    case type_of_berry
-      when :common
-        down_by_rate = 0.5
-        max = 4
-      when :uncommon
-        down_by_rate = 1.0
-        max = 6
-      when :rare
-        down_by_rate = 1.0
-        max = 5
-      when :very_rare
-        down_by_rate = 2.0
-        max = 7
-    end
-    value = max - (6 - ((prime_month - current_month).abs - 6).abs) * down_by_rate
-    value < 0 ? 0 : value.to_i
   end
 
   def sell_berries?
@@ -331,6 +345,9 @@ class Main < Gosu::Window
         end
 
         if @calendar.day_count == 5
+          if @fertilzer != :empty
+            @fertilizer = :empty
+          end
           @calendar.day_count = 0
           @calendar.month_count += 1
         end
@@ -343,12 +360,79 @@ class Main < Gosu::Window
     end
   end
 
+  def growth_rate(current_month, prime_month, type_of_berry, berry_color)
+    case type_of_berry
+      when :common
+        down_by_rate = 0.51
+        max = 5
+      when :uncommon
+        down_by_rate = 1.0
+        max = 6
+      when :rare
+        down_by_rate = 1.0
+        max = 5
+      when :very_rare
+        down_by_rate = 2.0
+        max = 7
+    end
+    value = (max - (6 - ((prime_month - current_month).abs - 6).abs) * down_by_rate).to_i
+    value += calc_fert(@fertilizer, berry_color).to_i
+    if @hoe
+      value += 1
+    end
+    value < 0 ? 0 : value
+  end
+
+  def calc_fert(fert_state, berry_color)
+    nitrogen_boost = [:white, :green, :teal, :gray, :pink]
+    potassium_boost = [:yellow, :red, :green, :brown, :orange]
+    phosphorus_boost = [:black, :red, :gray, :purple, :blue]
+
+    case fert_state
+    when :nitrogen
+      if nitrogen_boost.include?(berry_color)
+        2
+      end
+    when :potassium
+      if potassium_boost.include?(berry_color)
+        2
+      end
+    when :phosphorus
+      if phosphorus_boost.include?(berry_color)
+        2
+      end
+    else
+      0
+    end
+  end
+
+
+
   def draw_text(x, y, text, font, color)
     font.draw(text, x, y, 1, 1, 1, color)
   end
 
   def needs_cursor?
     true
+  end
+
+  def purchased_items?
+    if @fertilizer == :nitrogen
+      n = Gosu::Image.new(self, "img/store/nitrogen-small.png")
+      n.draw(25,30,2)
+    end
+    if @fertilizer == :potassium
+      n = Gosu::Image.new(self, "img/store/potassium-small.png")
+      n.draw(25,30,2)
+    end
+    if @fertilizer == :phosphorus
+      n = Gosu::Image.new(self, "img/store/phosphorus-small.png")
+      n.draw(25,30,2)
+    end
+    if @hoe
+      n = Gosu::Image.new(self, "img/store/hoe.png")
+      n.draw(425,30,2)
+    end
   end
 
 end

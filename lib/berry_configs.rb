@@ -17,7 +17,7 @@ module BerryConfig
   end
 
   def yellow_config
-    genetics = [["x", "x", "x", "y"], ["x", "x", "x", "z"]].sample
+    genetics = [["x", "y", "y", "y"], ["y", "y", "y", "z"]].sample
     { price: 100, window: self, x: 10, y: 350, color: "yellow", genetics: genetics, cols: 1, type: :common, prime_month: 4, prime_sell_month: 10 }
   end
 
