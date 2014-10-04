@@ -10,6 +10,8 @@ require_relative 'lib/cursor'
 require_relative 'lib/keys'
 require_relative 'lib/bounding_box'
 require_relative 'lib/buttons'
+require_relative 'lib/store'
+
 
 class Main < Gosu::Window
 
@@ -23,13 +25,15 @@ class Main < Gosu::Window
     self.caption = "Berry Game"
 
     @bg = Gosu::Image.new(self, "img/bg.gif")
-
+    @store = Store.new(self, 0, 0)
     @farmer = Farmer.new(self, 550, 400)
     @calendar = Calendar.new(self, 30, 30)
     @cursor = Cursor.new(self, true)
     @button_reset = Buttons.new(self, 90, 480, "reset")
     @button_combine = Buttons.new(self, 340, 480, "combine")
     @button_sell = Buttons.new(self, 220, 480, "sell")
+    @button_store = Buttons.new(self, 460, 480, "store")
+    @button_game = Buttons.new(self, 500, 480, "store")
 
 
     @basket = { yellow: 5, white: 5, black: 5, pink: 0,
@@ -49,8 +53,8 @@ class Main < Gosu::Window
     @berry_configs = [orange_config, green_config, pink_config, red_config, yellow_config, white_config, black_config, teal_config, brown_config, purple_config, gray_config, blue_config]
     build_berries
 
-
     @money = 0
+    @state = :running
   end
 
   def build_berries
@@ -60,34 +64,46 @@ class Main < Gosu::Window
   end
 
   def update
-    @calendar.update
-
-    berry_picked?
-    reset_berries?
-    combine_berries?
-    sell_berries?
-    @berries.each { |b| b.update }
+    if @state == :store
+      back_to_game?
+    else
+      @calendar.update
+      berry_picked?
+      reset_berries?
+      combine_berries?
+      sell_berries?
+      go_to_store?
+      @berries.each { |b| b.update }
+    end
   end
 
   def draw
-    @berry_images.draw
-    @bg.draw(0, 0, 0)
-    @button_reset.draw
-    @button_combine.draw
-    @button_sell.draw
-
-    @farmer.draw
-    @calendar.draw
     @cursor.draw
-    @berries.each { |b| b.draw }
 
-    draw_text(510, 185, "Berry 1 = #{@picked_berries[0].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 0
-    draw_text(510, 235, "Berry 2 = #{@picked_berries[1].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 1
-    draw_text(85, 560, "Reset Berries", @test_font, Gosu::Color::BLACK)
-    draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
-    draw_text(220, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
+    if @state == :store
+      @store.draw
+      @button_game.draw
+    else
+      @berry_images.draw
+      @bg.draw(0, 0, 0)
+      @button_reset.draw
+      @button_combine.draw
+      @button_sell.draw
+      @button_store.draw
 
-    draw_text(670, 30, "Money $#{@money}", @test_font, Gosu::Color::BLACK)
+      @farmer.draw
+      @calendar.draw
+      @berries.each { |b| b.draw }
+
+      draw_text(510, 185, "Berry 1 = #{@picked_berries[0].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 0
+      draw_text(510, 235, "Berry 2 = #{@picked_berries[1].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 1
+      draw_text(85, 560, "Reset Berries", @test_font, Gosu::Color::BLACK)
+      draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
+      draw_text(220, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
+
+      draw_text(670, 30, "Money $#{@money}", @test_font, Gosu::Color::BLACK)
+    end
+
   end
 
   def combine_berries(berry1, berry2)
@@ -234,6 +250,24 @@ class Main < Gosu::Window
       if @button_reset.bounds.collide?(location[0], location[1])
         @picked_berries.clear
         @berries.each { |b| b.state = :unselected }
+      end
+    end
+  end
+
+  def go_to_store?
+    @locs.each do |location|
+      if @button_store.bounds.collide?(location[0], location[1])
+        @state = :store
+        @locs.clear
+      end
+    end
+  end
+
+  def back_to_game?
+    @locs.each do |location|
+      if @button_game.bounds.collide?(location[0], location[1])
+        @state = :running
+        @locs.clear
       end
     end
   end

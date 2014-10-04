@@ -13,7 +13,7 @@ class Buttons
   end
 
   def draw
-    @button.draw(@x, @y, 0)
+    @button.draw(@x, @y, 1)
   end
 
 end
