@@ -29,7 +29,7 @@ class Main < Gosu::Window
     @cursor = Cursor.new(self, true)
     @button_reset = Buttons.new(self, 90, 480, "reset")
     @button_combine = Buttons.new(self, 340, 480, "combine")
-    @button_sell = Buttons.new(self, 210, 480, "combine")
+    @button_sell = Buttons.new(self, 220, 480, "combine")
 
 
     @basket = { yellow: 5, white: 5, black: 5, pink: 0,
@@ -48,6 +48,8 @@ class Main < Gosu::Window
     @berries = []
     @berry_configs = [orange_config, green_config, pink_config, red_config, yellow_config, white_config, black_config, teal_config, brown_config, purple_config, gray_config, blue_config]
     build_berries
+
+    binding.pry
 
     @score = 0
 
@@ -73,7 +75,7 @@ class Main < Gosu::Window
     @bg.draw(0, 0, 0)
     @button_reset.draw
     @button_combine.draw
-    @button_sell.draw
+      @button_sell.draw
 
     @farmer.draw
     @calendar.draw
@@ -88,9 +90,6 @@ class Main < Gosu::Window
     draw_text(200, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
 
     draw_text(670, 30, "Score #{@score}", @test_font, Gosu::Color::BLACK)
-
-
-
   end
 
   def combine_berries(berry1, berry2)
@@ -178,7 +177,6 @@ class Main < Gosu::Window
     @berries.each do |berry|
       @locs.each do |location|
         if berry.bounds.collide?(location[0], location[1])
-
           if berry.state != :selected
             berry.state = :selected
             if @selected >= 3
@@ -191,7 +189,6 @@ class Main < Gosu::Window
             berry.state = :deselected
             @locs.clear
           end
-
         end
       end
     end
@@ -217,7 +214,6 @@ class Main < Gosu::Window
           @calendar.day_count = 0
           @calendar.months.shift
         end
-
         @calendar.day_count += 1
         generate_correct_berry(combine_berries(@picked_berries[0], @picked_berries[1])) if @picked_berries.size > 0
 
