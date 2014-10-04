@@ -1,7 +1,7 @@
 class Berry
 
   attr_reader :type
-  attr_accessor :x, :y, :state, :color, :genetics, :sell, :prime_month
+  attr_accessor :x, :y, :state, :color, :genetics, :sell, :prime_month, :prime_sell_month, :type
 
   def initialize(args)
     @window = args[:window]
@@ -13,6 +13,7 @@ class Berry
     @type = args[:type]
     @sell = args[:price]
     @prime_month = args[:prime_month]
+    @prime_sell_month = args[:prime_sell_month]
 
     @berry_img = Gosu::Image.new(@window, "img/berries/#{@color}_berry.png")
     @test_font = Gosu::Font.new(@window, "Futura", 600 / 30)
@@ -51,39 +52,21 @@ class Berry
     font.draw(text, x, y, 3, 1, 1, color)
   end
 
-  def current_sale_value(current_month, prime_sell_month, rank_of_berry)
-    value = get_maximum(rank_of_berry) - (6 - ((prime_sell_month - current_month).abs - 6).abs) * 75
+  def current_sale_value(current_month, prime_sell_month, type_of_berry)
+    value = get_maximum(type_of_berry) - (6 - ((prime_sell_month - current_month).abs - 6).abs) * 75
     value < 0 ? 0 : value
   end
 
-  def get_maximum(rank)
-    if rank == :common
+  def get_maximum(type)
+    if type == :common
       200
-    elsif rank == :uncommon
+    elsif type == :uncommon
       300
-    elsif rank == :rare
+    elsif type == :rare
       400
     else
       500
     end
   end
 
-  def growth_rate(current_month, prime_month, rank_of_berry)
-    case rank_of_berry
-      when :common
-        down_by_rate = 0.5
-        max = 4
-      when :uncommon
-        down_by_rate = 1.0
-        max = 6
-      when :rare
-        down_by_rate = 1.0
-        max = 5
-      when :very_rare
-        down_by_rate = 2.0
-        max = 7
-    end
-    value = max - (6 - ((prime_month - current_month).abs - 6).abs) * down_by_rate
-    value < 0 ? 0 : value
-  end
 end

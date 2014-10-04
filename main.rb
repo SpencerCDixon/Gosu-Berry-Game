@@ -49,9 +49,8 @@ class Main < Gosu::Window
     @berry_configs = [orange_config, green_config, pink_config, red_config, yellow_config, white_config, black_config, teal_config, brown_config, purple_config, gray_config, blue_config]
     build_berries
 
-    binding.pry
 
-    @score = 0
+    @money = 0
 
   end
 
@@ -79,7 +78,6 @@ class Main < Gosu::Window
 
     @farmer.draw
     @calendar.draw
-    # @berry_images.draw
     @cursor.draw
     @berries.each { |b| b.draw }
 
@@ -89,7 +87,7 @@ class Main < Gosu::Window
     draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
     draw_text(200, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
 
-    draw_text(670, 30, "Score #{@score}", @test_font, Gosu::Color::BLACK)
+    draw_text(670, 30, "money #{@money}", @test_font, Gosu::Color::BLACK)
   end
 
   def combine_berries(berry1, berry2)
@@ -143,33 +141,33 @@ class Main < Gosu::Window
     final_berry
   end
 
-  def generate_correct_berry(array)
+  def generate_correct_berry(array, current_month)
     array.sort!
     case
     when array == ["x", "y", "y", "y"] || array == ["y", "y", "y", "z"]
-      @basket[:yellow] += 3
+      @basket[:yellow] += growth_rate(current_month, yellow_config[:prime_month], yellow_config[:type] )
     when array == ["x", "x", "x", "y"] || array == ["x", "x", "x", "z"]
-      @basket[:white] += 3
+      @basket[:white] += growth_rate(current_month, white_config[:prime_month], yellow_config[:type] )
     when array == ["x", "z", "z", "z"] || array == ["y", "z", "z", "z"]
-      @basket[:black] += 3
+      @basket[:black] += growth_rate(current_month, black_config[:prime_month], yellow_config[:type] )
     when array == ["x", "x", "y", "y"]
-      @basket[:green] += 3
+      @basket[:green] += growth_rate(current_month, green_config[:prime_month], yellow_config[:type] )
     when array == ["y", "y", "z", "z"]
-      @basket[:red] += 3
+      @basket[:red] += growth_rate(current_month, red_config[:prime_month], yellow_config[:type] )
     when array == ["x", "x", "z", "z"]
-      @basket[:gray] += 3
+      @basket[:gray] += growth_rate(current_month, gray_config[:prime_month], yellow_config[:type] )
     when array == ["x", "y", "y", "z"]
-      @basket[:brown] += 3
+      @basket[:brown] += growth_rate(current_month, brown_config[:prime_month], yellow_config[:type] )
     when array == ["x", "x", "y", "z"]
-      @basket[:teal] += 3
+      @basket[:teal] += growth_rate(current_month, teal_config[:prime_month], yellow_config[:type] )
     when array == ["x", "y", "z", "z"]
-      @basket[:purple] += 3
+      @basket[:purple] += growth_rate(current_month, purple_config[:prime_month], yellow_config[:type] )
     when array == ["y", "y", "y", "y"]
-      @basket[:orange] += 3
+      @basket[:orange] += growth_rate(current_month, orange_config[:prime_month], yellow_config[:type] )
     when array == ["x", "x", "x", "x"]
-      @basket[:pink] += 3
+      @basket[:pink] += growth_rate(current_month, pink_config[:prime_month], yellow_config[:type] )
     when array == ["z", "z", "z", "z"]
-      @basket[:blue] += 3
+      @basket[:blue] += growth_rate(current_month, blue_config[:prime_month], yellow_config[:type] )
     end
   end
 
@@ -215,7 +213,7 @@ class Main < Gosu::Window
           @calendar.months.shift
         end
         @calendar.day_count += 1
-        generate_correct_berry(combine_berries(@picked_berries[0], @picked_berries[1])) if @picked_berries.size > 0
+        generate_correct_berry(combine_berries(@picked_berries[0], @picked_berries[1]), @calendar.month_count) if @picked_berries.size > 0
 
         @picked_berries.clear
         @berries.each { |b| b.state = :unselected }
@@ -224,11 +222,32 @@ class Main < Gosu::Window
     end
   end
 
+  def growth_rate(current_month, prime_month, type_of_berry)
+    case type_of_berry
+      when :common
+        down_by_rate = 0.5
+        max = 4
+      when :uncommon
+        down_by_rate = 1.0
+        max = 6
+      when :rare
+        down_by_rate = 1.0
+        max = 5
+      when :very_rare
+        down_by_rate = 2.0
+        max = 7
+    end
+    value = max - (6 - ((prime_month - current_month).abs - 6).abs) * down_by_rate
+    value < 0 ? 0 : value
+    value = value.to_i
+  end
+
   def sell_berries?
     @locs.each do |location|
       if @button_sell.bounds.collide?(location[0], location[1])
-        @score += @picked_berries[0].sell
-        @score += @picked_berries[1].sell
+        @money += @picked_berries[0].current_sale_value(@calendar.month_count, @picked_berries[0].prime_sell_month, @picked_berries[0].type)
+        @money += @picked_berries[1].current_sale_value(@calendar.month_count, @picked_berries[1].prime_sell_month, @picked_berries[1].type)
+
 
         b1 = @picked_berries[0].color
         b2 = @picked_berries[1].color
@@ -239,10 +258,9 @@ class Main < Gosu::Window
           @calendar.day_count = 0
           @calendar.months.shift
         end
+
         @calendar.day_count += 1
-
         @picked_berries.clear
-
         @berries.each { |b| b.state = :unselected }
         @locs.clear
       end

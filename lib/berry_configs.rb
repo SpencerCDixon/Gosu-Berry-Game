@@ -1,19 +1,19 @@
 module BerryConfig
 
   def orange_config
-    { price: 500, window: self, x: 10, y: 400, color: "orange", genetics: ["y", "y", "y", "y"], cols: 4, type: :very_rare, prime_month: 9 }
+    { price: 500, window: self, x: 10, y: 400, color: "orange", genetics: ["y", "y", "y", "y"], cols: 4, type: :very_rare, prime_month: 9, prime_sell_month: 3 }
   end
 
   def green_config
-    { price: 200, window: self, x: 10, y: 300, color: "green", genetics: ["x", "x", "y", "y"], cols: 2, type: :uncommon, prime_month: 2 }
+    { price: 200, window: self, x: 10, y: 300, color: "green", genetics: ["x", "x", "y", "y"], cols: 2, type: :uncommon, prime_month: 2, prime_sell_month: 8 }
   end
 
   def pink_config
-    { price: 500, window: self, x: 10, y: 300, color: "pink", genetics: ["x", "x", "x", "x"], cols: 4, type: :very_rare, prime_month: 1 }
+    { price: 500, window: self, x: 10, y: 300, color: "pink", genetics: ["x", "x", "x", "x"], cols: 4, type: :very_rare, prime_month: 1, prime_sell_month: 7 }
   end
 
   def red_config
-    { price: 200, window: self, x: 10, y: 400, color: "red", genetics: ["y", "y", "z", "z"], cols: 2, type: :uncommon, prime_month: 6 }
+    { price: 200, window: self, x: 10, y: 400, color: "red", genetics: ["y", "y", "z", "z"], cols: 2, type: :uncommon, prime_month: 6, prime_sell_month: 0 }
 
   end
 
