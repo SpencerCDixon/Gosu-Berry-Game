@@ -15,7 +15,7 @@ class Main < Gosu::Window
 
   include Keys
   include BerryConfig
-  attr_reader :month, :basket, :selected, :month_count, :calendar, :berry_configs
+  attr_reader :month, :basket, :selected, :month_count, :calendar, :berry_configs, :farmer
   attr_accessor :picked_berries
 
   def initialize
@@ -74,7 +74,7 @@ class Main < Gosu::Window
     @bg.draw(0, 0, 0)
     @button_reset.draw
     @button_combine.draw
-      @button_sell.draw
+    @button_sell.draw
 
     @farmer.draw
     @calendar.draw
@@ -87,9 +87,7 @@ class Main < Gosu::Window
     draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
     draw_text(220, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
 
-    draw_text(670, 30, "money #{@money}", @test_font, Gosu::Color::BLACK)
-    draw_text(620, 30, "month count #{@calendar.month_count}", @test_font, Gosu::Color::RED)
-
+    draw_text(670, 30, "Money $#{@money}", @test_font, Gosu::Color::BLACK)
   end
 
   def combine_berries(berry1, berry2)
@@ -144,32 +142,68 @@ class Main < Gosu::Window
   end
 
   def generate_correct_berry(array, current_month)
+    @farmer.state = :harvest
     array.sort!
     case
     when array == ["x", "y", "y", "y"] || array == ["y", "y", "y", "z"]
-      @basket[:yellow] += growth_rate(current_month, yellow_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, yellow_config[:prime_month], yellow_config[:type] )
+      @basket[:yellow] += amount
+      @farmer.harvest = { color: :yellow, amount: amount}
+
     when array == ["x", "x", "x", "y"] || array == ["x", "x", "x", "z"]
-      @basket[:white] += growth_rate(current_month, white_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, white_config[:prime_month], white_config[:type] )
+      @basket[:white] += amount
+      @farmer.harvest = { color: :white, amount: amount}
+
     when array == ["x", "z", "z", "z"] || array == ["y", "z", "z", "z"]
-      @basket[:black] += growth_rate(current_month, black_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, black_config[:prime_month], black_config[:type] )
+      @basket[:black] += amount
+      @farmer.harvest = { color: :black, amount: amount}
+
     when array == ["x", "x", "y", "y"]
-      @basket[:green] += growth_rate(current_month, green_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, green_config[:prime_month], green_config[:type] )
+      @basket[:green] += amount
+      @farmer.harvest = { color: :green, amount: amount}
+
     when array == ["y", "y", "z", "z"]
-      @basket[:red] += growth_rate(current_month, red_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, red_config[:prime_month], red_config[:type] )
+      @basket[:red] += amount
+      @farmer.harvest = { color: :red, amount: amount}
+
     when array == ["x", "x", "z", "z"]
-      @basket[:gray] += growth_rate(current_month, gray_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, gray_config[:prime_month], gray_config[:type] )
+      @basket[:gray] += amount
+      @farmer.harvest = { color: :gray, amount: amount}
+
     when array == ["x", "y", "y", "z"]
-      @basket[:brown] += growth_rate(current_month, brown_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, brown_config[:prime_month], brown_config[:type] )
+      @basket[:brown] += amount
+      @farmer.harvest = { color: :brown, amount: amount}
+
     when array == ["x", "x", "y", "z"]
-      @basket[:teal] += growth_rate(current_month, teal_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, teal_config[:prime_month], teal_config[:type] )
+      @basket[:teal] += amount
+      @farmer.harvest = { color: :teal, amount: amount}
+
     when array == ["x", "y", "z", "z"]
-      @basket[:purple] += growth_rate(current_month, purple_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, purple_config[:prime_month], purple_config[:type] )
+      @basket[:purple] += amount
+      @farmer.harvest = { color: :purple, amount: amount}
+
     when array == ["y", "y", "y", "y"]
-      @basket[:orange] += growth_rate(current_month, orange_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, orange_config[:prime_month], orange_config[:type] )
+      @basket[:orange] += amount
+      @farmer.harvest = { color: :orange, amount: amount}
+
     when array == ["x", "x", "x", "x"]
-      @basket[:pink] += growth_rate(current_month, pink_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, pink_config[:prime_month], pink_config[:type] )
+      @basket[:pink] += amount
+      @farmer.harvest = { color: :pink, amount: amount}
+
     when array == ["z", "z", "z", "z"]
-      @basket[:blue] += growth_rate(current_month, blue_config[:prime_month], yellow_config[:type] )
+      amount = growth_rate(current_month, blue_config[:prime_month], blue_config[:type] )
+      @basket[:blue] += amount
+      @farmer.harvest = { color: :blue, amount: amount}
     end
   end
 
@@ -179,6 +213,7 @@ class Main < Gosu::Window
         if berry.bounds.collide?(location[0], location[1])
           if berry.state != :selected
             berry.state = :selected
+            @farmer.state = :selected
             if @selected >= 3
               @selected = 0
             end
@@ -247,16 +282,18 @@ class Main < Gosu::Window
     @locs.each do |location|
       if @button_sell.bounds.collide?(location[0], location[1])
         if @picked_berries.size == 2
-        @money += @picked_berries[0].current_sale_value(@calendar.month_count, @picked_berries[0].prime_sell_month, @picked_berries[0].type)
-        @money += @picked_berries[1].current_sale_value(@calendar.month_count, @picked_berries[1].prime_sell_month, @picked_berries[1].type)
+          berry_1_sell = @picked_berries[0].current_sale_value(@calendar.month_count, @picked_berries[0].prime_sell_month, @picked_berries[0].type)
+          @money += berry_1_sell
+          @farmer.berry1 = { color: @picked_berries[0].color, amount_sold_for: berry_1_sell }
 
+          berry_2_sell = @picked_berries[1].current_sale_value(@calendar.month_count, @picked_berries[1].prime_sell_month, @picked_berries[1].type)
+          @money += berry_2_sell
+          @farmer.berry2 = { color: @picked_berries[1].color, amount_sold_for: berry_2_sell }
 
-
-        b1 = @picked_berries[0].color
-        b2 = @picked_berries[1].color
-        @basket[b1.to_sym] -= 1
-        @basket[b2.to_sym] -= 1
-
+          b1 = @picked_berries[0].color
+          b2 = @picked_berries[1].color
+          @basket[b1.to_sym] -= 1
+          @basket[b2.to_sym] -= 1
         end
 
         if @calendar.day_count == 5

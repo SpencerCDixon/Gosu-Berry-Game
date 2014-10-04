@@ -53,6 +53,7 @@ class Berry
   end
 
   def current_sale_value(current_month, prime_sell_month, type_of_berry)
+    @window.farmer.state = :receipt
     value = get_maximum(type_of_berry) - (6 - ((prime_sell_month - current_month).abs - 6).abs) * 75
     value < 0 ? 0 : value
   end

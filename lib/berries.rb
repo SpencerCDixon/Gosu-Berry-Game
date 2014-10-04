@@ -23,7 +23,6 @@ class Berries
 
     @quantity = Gosu::Font.new(@window, "Futura", 600 / 30)
 
-
     @space = 80
   end
 
