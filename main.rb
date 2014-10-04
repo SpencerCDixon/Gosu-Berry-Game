@@ -15,7 +15,7 @@ class Main < Gosu::Window
 
   include Keys
   include BerryConfig
-  attr_reader :month, :basket, :selected, :month_count
+  attr_reader :month, :basket, :selected, :month_count, :calendar, :berry_configs
   attr_accessor :picked_berries
 
   def initialize
@@ -29,7 +29,7 @@ class Main < Gosu::Window
     @cursor = Cursor.new(self, true)
     @button_reset = Buttons.new(self, 90, 480, "reset")
     @button_combine = Buttons.new(self, 340, 480, "combine")
-    @button_sell = Buttons.new(self, 220, 480, "combine")
+    @button_sell = Buttons.new(self, 220, 480, "sell")
 
 
     @basket = { yellow: 5, white: 5, black: 5, pink: 0,
@@ -51,7 +51,6 @@ class Main < Gosu::Window
 
 
     @money = 0
-
   end
 
   def build_berries
@@ -71,6 +70,7 @@ class Main < Gosu::Window
   end
 
   def draw
+    @berry_images.draw
     @bg.draw(0, 0, 0)
     @button_reset.draw
     @button_combine.draw
@@ -85,9 +85,11 @@ class Main < Gosu::Window
     draw_text(510, 235, "Berry 2 = #{@picked_berries[1].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 1
     draw_text(85, 560, "Reset Berries", @test_font, Gosu::Color::BLACK)
     draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
-    draw_text(200, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
+    draw_text(220, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
 
     draw_text(670, 30, "money #{@money}", @test_font, Gosu::Color::BLACK)
+    draw_text(620, 30, "month count #{@calendar.month_count}", @test_font, Gosu::Color::RED)
+
   end
 
   def combine_berries(berry1, berry2)
@@ -210,7 +212,7 @@ class Main < Gosu::Window
         @basket[b2.to_sym] -= 1
         if @calendar.day_count == 5
           @calendar.day_count = 0
-          @calendar.months.shift
+          @calendar.month_count += 1
         end
         @calendar.day_count += 1
         generate_correct_berry(combine_berries(@picked_berries[0], @picked_berries[1]), @calendar.month_count) if @picked_berries.size > 0
@@ -238,15 +240,16 @@ class Main < Gosu::Window
         max = 7
     end
     value = max - (6 - ((prime_month - current_month).abs - 6).abs) * down_by_rate
-    value < 0 ? 0 : value
-    value = value.to_i
+    value < 0 ? 0 : value.to_i
   end
 
   def sell_berries?
     @locs.each do |location|
       if @button_sell.bounds.collide?(location[0], location[1])
+        if @picked_berries.size == 2
         @money += @picked_berries[0].current_sale_value(@calendar.month_count, @picked_berries[0].prime_sell_month, @picked_berries[0].type)
         @money += @picked_berries[1].current_sale_value(@calendar.month_count, @picked_berries[1].prime_sell_month, @picked_berries[1].type)
+
 
 
         b1 = @picked_berries[0].color
@@ -254,9 +257,11 @@ class Main < Gosu::Window
         @basket[b1.to_sym] -= 1
         @basket[b2.to_sym] -= 1
 
+        end
+
         if @calendar.day_count == 5
           @calendar.day_count = 0
-          @calendar.months.shift
+          @calendar.month_count += 1
         end
 
         @calendar.day_count += 1

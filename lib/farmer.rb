@@ -14,4 +14,10 @@ class Farmer
     @text_bubble.draw(@x - 100, @y - 250, 0)
   end
 
+  def recept(berry_color, sale_price)
+
+  end
+
+
+
 end

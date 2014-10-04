@@ -14,7 +14,6 @@ module BerryConfig
 
   def red_config
     { price: 200, window: self, x: 10, y: 400, color: "red", genetics: ["y", "y", "z", "z"], cols: 2, type: :uncommon, prime_month: 6, prime_sell_month: 0 }
-
   end
 
   def yellow_config

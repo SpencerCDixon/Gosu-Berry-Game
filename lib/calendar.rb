@@ -26,8 +26,6 @@ class Calendar
 
     @day_count = 1
     @month_count = 0
-
-
   end
 
   def draw
