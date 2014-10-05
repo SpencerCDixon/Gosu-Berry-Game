@@ -18,7 +18,7 @@ class Main < Gosu::Window
   include Keys
   include BerryConfig
   attr_reader :month, :basket, :selected, :month_count, :calendar, :berry_configs, :farmer
-  attr_accessor :picked_berries, :locs, :button_buy, :fertilizer, :money, :hoe
+  attr_accessor :picked_berries, :locs, :button_buy, :fertilizer, :money, :hoe, :helpers, :tractor
 
   def initialize
     super(800, 600, false)
@@ -29,11 +29,11 @@ class Main < Gosu::Window
     @farmer = Farmer.new(self, 550, 400)
     @calendar = Calendar.new(self, 30, 30)
     @cursor = Cursor.new(self, true)
-    @button_reset = Buttons.new(self, 90, 480, "reset")
-    @button_combine = Buttons.new(self, 340, 480, "combine")
-    @button_sell = Buttons.new(self, 220, 480, "sell")
-    @button_store = Buttons.new(self, 460, 480, "store")
-    @button_game = Buttons.new(self, 650, 480, "store")
+    @button_reset = Buttons.new(self, 10, 200, "reset")
+    @button_combine = Buttons.new(self, 10, 380, "combine")
+    @button_sell = Buttons.new(self, 10, 290, "sell")
+    @button_store = Buttons.new(self, 10, 470, "store")
+    @button_game = Buttons.new(self, 650, 480, "back")
     @button_buy = Buttons.new(self, 550, 480, "sell")
 
 
@@ -41,7 +41,7 @@ class Main < Gosu::Window
                 orange: 0, blue: 0, green: 0, gray: 0,
                 red: 0, teal: 0, brown: 0, purple: 0 }
 
-    @berry_images = Berries.new(self, 50, 300)
+    @berry_images = Berries.new(self, 60, 300)
     @test_font = Gosu::Font.new(self, "Futura", 600 / 30)
     @farmer_font = Gosu::Font.new(self, "Futura", 600 / 20)
 
@@ -54,9 +54,11 @@ class Main < Gosu::Window
     @berry_configs = [orange_config, green_config, pink_config, red_config, yellow_config, white_config, black_config, teal_config, brown_config, purple_config, gray_config, blue_config]
     build_berries
 
-    @money = 2000
+    @money = 10_000
     @fertilizer = :empty
     @hoe = false
+    @helpers = 0
+    @tractor = 0
     @state = :running
   end
 
@@ -67,60 +69,58 @@ class Main < Gosu::Window
   end
 
   def update
-    if @state == :store
-      back_to_game?
-      @store.update
-    else
-      @calendar.update
-      berry_picked?
-      reset_berries?
-      combine_berries?
-      sell_berries?
-      go_to_store?
-      @berries.each { |b| b.update }
-    end
+      if @state == :store
+        back_to_game?
+        @store.update
+      else
+        @calendar.update
+        berry_picked?
+        reset_berries?
+        combine_berries?
+        sell_berries?
+        go_to_store?
+        @berries.each { |b| b.update }
+      end
 
-    purchased_items?
+      purchased_items?
   end
 
   def draw
-    @cursor.draw
+    if @state != :gameover
+      @cursor.draw
 
-    if @state == :store
-      @store.draw
-      @button_game.draw
-      @button_buy.draw
-      draw_text(665, 560, "Return", @test_font, Gosu::Color::RED)
-      draw_text(555, 560, "Buy Item", @test_font, Gosu::Color::RED)
+      if @state == :store
+        @store.draw
+        @button_game.draw
+        @button_buy.draw
+        draw_text(555, 560, "Buy Item", @test_font, Gosu::Color::RED)
+      else
+        @berry_images.draw
+        @bg.draw(0, 0, 0)
+        @button_reset.draw
+        @button_combine.draw
+        @button_sell.draw
+        @button_store.draw
+
+        @farmer.draw
+        @calendar.draw
+        @berries.each { |b| b.draw }
+
+        draw_text(510, 185, "Berry 1 = #{@picked_berries[0].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 0
+        draw_text(510, 235, "Berry 2 = #{@picked_berries[1].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 1
+
+        draw_text(670, 30, "Money $#{@money}", @test_font, Gosu::Color::BLACK)
+        draw_text(120, 160, "Day: #{@calendar.day_count}", @test_font, Gosu::Color::RED)
+        draw_text(120, 180, "Months: #{@calendar.game_over_count}", @test_font, Gosu::Color::RED)
 
 
+        purchased_items?
+      end
     else
-      @berry_images.draw
-      @bg.draw(0, 0, 0)
-      @button_reset.draw
-      @button_combine.draw
-      @button_sell.draw
-      @button_store.draw
-
       @farmer.draw
-      @calendar.draw
-      @berries.each { |b| b.draw }
-
-      draw_text(510, 185, "Berry 1 = #{@picked_berries[0].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 0
-      draw_text(510, 235, "Berry 2 = #{@picked_berries[1].color.capitalize}", @farmer_font, Gosu::Color::BLACK) if @picked_berries.size > 1
-      draw_text(85, 560, "Reset Berries", @test_font, Gosu::Color::BLACK)
-      draw_text(330, 560, "Combine Berries", @test_font, Gosu::Color::BLACK)
-      draw_text(220, 560, "Sell Berries", @test_font, Gosu::Color::BLACK)
-      draw_text(480, 560, "Store", @test_font, Gosu::Color::BLACK)
-
-
-      draw_text(670, 30, "Money $#{@money}", @test_font, Gosu::Color::BLACK)
-      draw_text(555, 560, "#{@fertilizer}", @test_font, Gosu::Color::RED)
-
-      purchased_items?
+      @bg.draw(0, 0, 0)
 
     end
-
   end
 
   def combine_berries(berry1, berry2)
@@ -296,6 +296,7 @@ class Main < Gosu::Window
     @locs.each do |location|
       if @button_game.bounds.collide?(location[0], location[1])
         @state = :running
+        @store.stock.each { |b| b.state = :unselected }
         @locs.clear
       end
     end
@@ -309,14 +310,15 @@ class Main < Gosu::Window
         @basket[b1.to_sym] -= 1
         @basket[b2.to_sym] -= 1
 
-        if @calendar.day_count == 5
+        if @calendar.day_count >= 30
           if @fertilzer != :empty
             @fertilizer = :empty
           end
           @calendar.day_count = 0
           @calendar.month_count += 1
+          @calendar.game_over_count += 1
         end
-        @calendar.day_count += 1
+        @calendar.day_count += (6 - @helpers)
         generate_correct_berry(combine_berries(@picked_berries[0], @picked_berries[1]), @calendar.month_count) if @picked_berries.size > 0
 
         @picked_berries.clear
@@ -344,15 +346,16 @@ class Main < Gosu::Window
           @basket[b2.to_sym] -= 1
         end
 
-        if @calendar.day_count == 5
+        if @calendar.day_count >= 30
           if @fertilzer != :empty
             @fertilizer = :empty
           end
           @calendar.day_count = 0
           @calendar.month_count += 1
+          @calendar.game_over_count += 1
         end
 
-        @calendar.day_count += 1
+        @calendar.day_count += (6 - @helpers - @tractor)
         @picked_berries.clear
         @berries.each { |b| b.state = :unselected }
         @locs.clear
@@ -406,8 +409,6 @@ class Main < Gosu::Window
     end
   end
 
-
-
   def draw_text(x, y, text, font, color)
     font.draw(text, x, y, 1, 1, 1, color)
   end
@@ -431,7 +432,25 @@ class Main < Gosu::Window
     end
     if @hoe
       n = Gosu::Image.new(self, "img/store/hoe.png")
-      n.draw(425,30,2)
+      n.draw_rot(702,486,2, 45)
+    end
+    if @helpers > 0
+      n = Gosu::Image.new(self, "img/store/helper.png")
+      if @helpers >= 3
+        n.draw(700,500,2)
+        n.draw(500,500,2)
+        n.draw(400,500,2)
+      elsif @helpers >= 2
+        n.draw(700,500,2)
+        n.draw(500,500,2)
+      else
+        n.draw(700,500,2)
+      end
+    end
+    if @tractor > 0
+      n = Gosu::Image.new(self, "img/store/tractor.png")
+      n.draw(270, 500, 1)
+
     end
   end
 

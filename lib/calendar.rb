@@ -1,6 +1,6 @@
 class Calendar
 
-  attr_accessor :day_count, :month_count, :current_month, :months
+  attr_accessor :day_count, :month_count, :current_month, :months, :game_over_count
 
   def initialize(window, x, y)
     @window = window
@@ -25,7 +25,10 @@ class Calendar
                :october, :november, :december]
 
     @day_count = 1
-    @month_count = 0
+    @month_count = rand(0..11)
+    @game_over_count = 10
+
+
   end
 
   def draw
@@ -58,7 +61,15 @@ class Calendar
   end
 
   def update
-    @current_month = @months[@month_count]
+    if @game_over_count == 12
+      @window.state = :gameover
+    end
+    if @month_count <= 11
+      @current_month = @months[@month_count]
+    else
+      @month_count = 0
+      @current_month = @months[@month_count]
+    end
   end
 
 end

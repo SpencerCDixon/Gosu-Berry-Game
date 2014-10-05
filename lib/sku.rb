@@ -1,7 +1,7 @@
 class SkuFactory
 
-  attr_reader :type
-  attr_accessor :x, :y, :z, :state, :name
+  attr_reader :type, :featured_x, :featured_y
+  attr_accessor :x, :y, :z, :state, :name, :shop_quantity, :bankrupt, :already_purchased
 
   def initialize(args)
     @name = args[:name]
@@ -19,6 +19,8 @@ class SkuFactory
     @height = args[:height]
     @width = args[:width]
     @type = args[:type]
+    @bankrupt = false
+    @already_purchased = false
 
     @test_font = Gosu::Font.new(@window, "Futura", 600 / 30)
   end
@@ -31,6 +33,12 @@ class SkuFactory
     if @state == :selected
       @image.draw(@featured_x, @featured_y, @z)
       draw_text(@featured_x + 110, @featured_y + 40, "#{@description}", @test_font, 0xffffffff)
+      if @bankrupt
+        draw_text(@featured_x + 110, @featured_y + 60, "Not enough money, time to sell some berries!", @test_font, Gosu::Color::RED)
+      end
+      if @already_purchased
+        draw_text(@featured_x + 110, @featured_y + 60, "You can't get anymore", @test_font, Gosu::Color::RED)
+      end
     else
       @image.draw(@original_x, @original_y, @z)
     end

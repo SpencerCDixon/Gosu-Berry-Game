@@ -22,7 +22,7 @@ class Berry
     @spacing = 80
     @state = :unselected
 
-    @x = @x + col(@cols)
+    @x = @x + col(@cols) + 20
   end
 
   def col(num)
@@ -34,7 +34,7 @@ class Berry
   end
 
   def bounds
-    BoundingBox.new(@x, @y, 48, 44)
+    BoundingBox.new(@x, @y, 40, 40)
   end
 
   def draw

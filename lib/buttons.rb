@@ -9,7 +9,7 @@ class Buttons
   end
 
   def bounds
-    BoundingBox.new(@x, @y, 75, 75)
+    BoundingBox.new(@x, @y, 80, 80)
   end
 
   def draw
