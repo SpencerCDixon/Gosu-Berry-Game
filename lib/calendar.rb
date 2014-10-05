@@ -26,7 +26,7 @@ class Calendar
 
     @day_count = 1
     @month_count = rand(0..11)
-    @game_over_count = 10
+    @game_over_count = 0
 
 
   end
