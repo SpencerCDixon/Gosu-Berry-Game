@@ -1,5 +1,5 @@
 require 'gosu'
-require 'pry'
+require 'releasy'
 
 require_relative 'lib/berries'
 require_relative 'lib/berry'
